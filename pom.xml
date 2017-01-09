@@ -87,4 +87,5 @@
 			</properties>
 		</profile>
   </profiles>
+  <description>自己实现一个线程池</description>
 </project>

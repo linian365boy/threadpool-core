@@ -1,5 +1,9 @@
 package com.jp.nian.threadpool.core;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,81 +16,81 @@ import org.slf4j.LoggerFactory;
  * @version  
  * @since JDK 1.7
  */
-public class ThreadPool implements Pool {
+public class ThreadPool implements Pool<PoolThread> {
 	//默认线程池的线程数
-	private static int default_size = 5;
-	//线程池中的空闲线程
-	private PoolThread[] idleThreads;
-	private boolean shudown = false;
+	private static final int DEFAULT_SIZE = 6;
+	//线程池中的空闲线程，用队列表示
+	private BlockingQueue<PoolThread> idleThreads;
+	//设置线程池是否关闭的标志
+	private volatile boolean isShutdown = false;
 	//日志组件
 	private static final Logger logger = LoggerFactory.getLogger(ThreadPool.class);
 	
 	public ThreadPool(){
-		this(default_size);
+		this(DEFAULT_SIZE);
 	}
 	
 	public ThreadPool(int threadSize){
-		ThreadPool.default_size = threadSize;
-		this.idleThreads = new PoolThread[threadSize];
-		/*for(int i = 0; i < default_size; i++){
-			idleThreads[i] = new PoolThread(this);
-		}*/
+		this.idleThreads = new LinkedBlockingQueue<>(threadSize);
+		for(int i=0; i<threadSize; i++){
+			PoolThread thread = new PoolThread(this);
+			thread.setName("ThreadPool-"+i);
+			thread.start();
+			idleThreads.add(thread);
+		}
 	}
 	
-	
-	
 	@Override
-	public void close() {
-		shudown = true;
-		for(int i=0;i<idleThreads.length;i++){
-			idleThreads[i].setShutDown(true);
-			idleThreads[i].interrupt();
+	public void shutdown() {
+		setShutdown(true);
+		int threadSize = idleThreads.size();
+		logger.info("threadPool all has {} thread.", threadSize);
+		for(int i=0; i<threadSize; i++){
+			PoolThread thread = borrowFromPool();
+			thread.setTask(null);
+			thread.setIdleLocal(null);
+			thread.close();
 		}
+		idleThreads.clear();
 	}
 
 	@Override
-	public void execute(Runnable task) {
-		for(int i=0;i<idleThreads.length;i++){
-			if(idleThreads[i]==null){
-				idleThreads[i] = new PoolThread(this);
-				idleThreads[i].start();
-			}
-			if(idleThreads[i].isIdle()){
-				idleThreads[i].setTask(task);
-				idleThreads[i].start();
-				idleThreads[i].setIdle(false);
-				break;
-			}
-		}
+	public void execute(Task task) {
+		//线程空闲队列取出一个线程去执行任务
+		PoolThread thread = borrowFromPool();
+		logger.info("I will set the task soon...");
+		thread.setTask(task);
 	}
 	
-	/**
-	 * recovery:线程完成任务，回收线程池的线程
-	 * @author tanfan 
-	 * @param poolThread 
-	 * @since JDK 1.7
-	 */
-	public void recovery(PoolThread poolThread) {
-		if(!shudown){
-			logger.info("线程池PoolThread value {}",poolThread);
-			poolThread.setIdle(true);
+	@Override
+	public PoolThread borrowFromPool() {
+		PoolThread thread = null;
+		try {
+			logger.info("borrow thread from pool, pool all has {} threads .", idleThreads.size());
+			thread = idleThreads.take();
+			logger.info("thread {} borrow from pool, pool all has {} threads", thread.getName(), idleThreads.size());
+		} catch (InterruptedException e) {
+			logger.error("borrow from pool error",e);
 		}
-	}
-	
-	/**
-	 * getIdleThread:拿线程池的空闲线程
-	 * @author tanfan 
-	 * @return 
-	 * @since JDK 1.7
-	 */
-	public PoolThread[] getIdleThread() {
-		int m = 0;
-		for(int i=0;i < idleThreads.length;i++){
-			if(idleThreads[i].isIdle()){
-				idleThreads[m++] = idleThreads[i];
-			}
-		}
-		return idleThreads;
+		return thread;
 	}
 
+	@Override
+	public void returnToPool(PoolThread t) {
+		try {
+			logger.info("thread {} return to pool", t.getName());
+			idleThreads.offer(t, 1L, TimeUnit.SECONDS);
+			logger.info("thread {} return to pool, pool all has {} threads", t.getName(), idleThreads.size());
+		} catch (InterruptedException e) {
+			logger.error("return to pool error ",e);
+		}
+	}
+	
+	public boolean isShutdown() {
+		return isShutdown;
+	}
+
+	public void setShutdown(boolean isShutdown) {
+		this.isShutdown = isShutdown;
+	}
 }

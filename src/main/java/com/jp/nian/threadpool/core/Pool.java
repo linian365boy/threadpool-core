@@ -6,9 +6,22 @@ package com.jp.nian.threadpool.core;
  * 
  * @author tanfan 
  * @version  
+ * @param <T>
  * @since JDK 1.7
  */
-public interface Pool {
-	void close();
-	void execute(Runnable task);
+public interface Pool<T> {
+	//关闭线程池
+	void shutdown();
+	//执行任务
+	void execute(Task task);
+	//借
+	T borrowFromPool();
+	//还
+	void returnToPool(T t);
+	
+	//得到线程池关闭标志
+	public boolean isShutdown();
+	//设置线程池关闭标志
+	public void setShutdown(boolean isShutdown) ;
+	
 }
