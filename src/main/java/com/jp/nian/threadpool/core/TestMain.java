@@ -1,6 +1,5 @@
 package com.jp.nian.threadpool.core;
 
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +16,9 @@ public class TestMain {
 			//10个线程去执行20个任务，肯定有线程执行2个或2个以上的任务
 			pool.execute(task[i]);
 		}
-		try {
-			TimeUnit.SECONDS.sleep(60);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		//等待任务运行完执行
 		pool.shutdown();
+		//pool.shutdownnow();
 		logger.info("线程池关闭....");
 	}
 }

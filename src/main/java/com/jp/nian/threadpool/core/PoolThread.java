@@ -42,22 +42,26 @@ public class PoolThread extends Thread {
 	
 	@Override
 	public void run() {
-		while(idleLocal.get()){
+		while(idleLocal!=null && idleLocal.get()){
+			logger.debug("{} my task is |{}", this.getName(), task);
 			if(task!=null){
 				try{
 					synchronized (this) {
-						logger.info("{} will be execute task", this.getName());
+						logger.debug("{} will be execute task", this.getName());
 						idleLocal.set(false);
 						task.doSomething();
 						//归还这个Thread
 						pool.returnToPool(this);
-						logger.info("{} do the work and will be wait", this.getName());
-						this.wait();
-						logger.info("{} is notifyed by other ", this.getName());
 						if(pool.isShutdown()){
+							logger.debug("find thread pool shutdown, I am going die......");
 							break;
 						}
-						idleLocal.set(true);
+						logger.debug("{} do the work and will be wait", this.getName());
+						this.wait();
+						logger.debug("{} is notifyed by other ", this.getName());
+						if(idleLocal!=null){
+							idleLocal.set(true);
+						}
 					}
 				}catch(Exception e){
 					logger.error("thread task after error",e);
@@ -71,14 +75,13 @@ public class PoolThread extends Thread {
 	}
 
 	public void setTask(Task task) {
-		logger.info("I set the task now ...");
+		logger.debug("{} set the task|{} now ...",this.getName(), task);
 		this.task = task;
 		synchronized (this) {
-			logger.info("I enter set the task synchronized ...");
+			logger.debug("I enter set the task synchronized ...");
 			this.notifyAll();
 		}
 	}
-	
 	
 	public ThreadLocal<Boolean> getIdleLocal() {
 		return idleLocal;
@@ -88,15 +91,14 @@ public class PoolThread extends Thread {
 		this.idleLocal = idleLocal;
 	}
 
+	public void close() {
+		synchronized (this) {
+			this.notifyAll();
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
-	}
-
-	public void close() {
-		//logger.info("线程池正在关闭={}",pool.isShutdown());
-		synchronized (this) {
-			this.notify();
-		}
 	}
 }

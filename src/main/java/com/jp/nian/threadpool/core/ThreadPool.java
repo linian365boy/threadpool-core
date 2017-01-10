@@ -44,7 +44,9 @@ public class ThreadPool implements Pool<PoolThread> {
 	public void shutdown() {
 		setShutdown(true);
 		int threadSize = idleThreads.size();
-		logger.info("threadPool all has {} thread.", threadSize);
+		logger.debug("threadPool all has {} thread.", threadSize);
+		threadSize = idleThreads.size();
+		logger.info("closing pool........");
 		for(int i=0; i<threadSize; i++){
 			PoolThread thread = borrowFromPool();
 			thread.setTask(null);
@@ -53,12 +55,17 @@ public class ThreadPool implements Pool<PoolThread> {
 		}
 		idleThreads.clear();
 	}
+	
+	@Override
+	public void shutdownnow() {
+		
+	}
 
 	@Override
 	public void execute(Task task) {
 		//线程空闲队列取出一个线程去执行任务
 		PoolThread thread = borrowFromPool();
-		logger.info("I will set the task soon...");
+		logger.debug("I will set the task|{} soon...", task);
 		thread.setTask(task);
 	}
 	
@@ -66,9 +73,9 @@ public class ThreadPool implements Pool<PoolThread> {
 	public PoolThread borrowFromPool() {
 		PoolThread thread = null;
 		try {
-			logger.info("borrow thread from pool, pool all has {} threads .", idleThreads.size());
+			logger.debug("borrow thread from pool, pool all has {} threads .", idleThreads.size());
 			thread = idleThreads.take();
-			logger.info("thread {} borrow from pool, pool all has {} threads", thread.getName(), idleThreads.size());
+			logger.debug("thread {} borrow from pool, pool all has {} threads", thread.getName(), idleThreads.size());
 		} catch (InterruptedException e) {
 			logger.error("borrow from pool error",e);
 		}
@@ -78,9 +85,9 @@ public class ThreadPool implements Pool<PoolThread> {
 	@Override
 	public void returnToPool(PoolThread t) {
 		try {
-			logger.info("thread {} return to pool", t.getName());
+			logger.debug("thread {} return to pool", t.getName());
 			idleThreads.offer(t, 1L, TimeUnit.SECONDS);
-			logger.info("thread {} return to pool, pool all has {} threads", t.getName(), idleThreads.size());
+			logger.debug("thread {} return to pool, pool all has {} threads", t.getName(), idleThreads.size());
 		} catch (InterruptedException e) {
 			logger.error("return to pool error ",e);
 		}
