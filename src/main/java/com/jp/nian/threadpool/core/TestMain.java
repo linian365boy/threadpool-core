@@ -18,6 +18,7 @@ public class TestMain {
 		}
 		//等待任务运行完执行
 		pool.shutdown();
+		//pool.shutdownnow();
 		logger.info("线程池关闭....");
 	}
 }
