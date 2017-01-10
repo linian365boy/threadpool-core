@@ -102,7 +102,7 @@
 	 </logger>
 	  <!-- 根logger的设置-->       
     <root>       
-        <priority value ="debug"/>
+        <priority value ="INFO"/>
         <appender-ref ref="stdout"/>
     </root>    
 </log4j:configuration>

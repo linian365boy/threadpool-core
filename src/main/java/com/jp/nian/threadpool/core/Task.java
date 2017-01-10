@@ -21,11 +21,12 @@ public class Task {
 	public void doSomething() {
 		long sleepSecond = new Double(Math.random()*10).longValue();
 		try {
-			logger.info("I am doing my task, I need sleep {} s", sleepSecond);
+			logger.info("I am doing my task|{}, I need sleep {} s", this, sleepSecond);
+			//模拟任务的执行时间
 			TimeUnit.SECONDS.sleep(sleepSecond);
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			logger.error("I am sleep and happend error ", e);
 		}
-		logger.info("I am done my thing ...");
+		logger.info("I am done my task|{}", this);
 	}
 }
