@@ -9,100 +9,14 @@
 		</layout>
 	</appender>
 	
-	<!-- info信息日志 -->
-	<appender name="infoLog" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="${logback.back.file}/info.log"/>
-		<param name="Append" value="true"/>
-		<param name="maxFileSize" value="10240KB"/>
-		<param name="maxBackupIndex" value="10"/>
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern"
-				value="%d{yyyy/MM/dd HH:mm:ss.sss} [%-5p] %c - %m%n"/>
-		</layout>
-		<filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMax" value="INFO" />
-            <param name="LevelMin" value="INFO" />
-        </filter>
-	</appender>
-	
-	<!-- warn警告日志 -->
-	<appender name="warnLog" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="${logback.back.file}/warn.log"/>
-		<param name="Append" value="true"/>
-		<param name="maxFileSize" value="10240KB"/>
-		<param name="maxBackupIndex" value="10"/>
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern"
-				value="%d{yyyy/MM/dd HH:mm:ss.sss} [%-5p] %c - %m%n"/>
-		</layout>
-		<filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMax" value="WARN" />
-            <param name="LevelMin" value="WARN" />
-        </filter>
-	</appender>
-	
-	<!-- error 错误日志 -->
-	<appender name="errorLog" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="${logback.back.file}/error.log"/>
-		<param name="Append" value="true"/>
-		<param name="maxFileSize" value="10240KB"/>
-		<param name="maxBackupIndex" value="10"/>
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern"
-				value="%d{yyyy/MM/dd HH:mm:ss.sss} [%-5p] %c - %m%n"/>
-		</layout>
-		<filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMax" value="ERROR" />
-            <param name="LevelMin" value="ERROR" />
-       	</filter>
-	</appender>
-	
 	<!-- Application Loggers -->
 	<!-- 记录该包下所有日志 -->
 	<logger name="com.jp" additivity="false">
-		<level value="${logback.log.level}" />
-		<appender-ref ref="stdout"/>
-		<appender-ref ref="infoLog"/>
-		<appender-ref ref="warnLog"/> 
-		<appender-ref ref="errorLog"/>
+		${log4j.log.console}
 	</logger>
 	
-	<!-- 3rdparty Loggers -->
-	<logger name="org.springframework">
-		<level value="${logback.log.level}"/>
-		<appender-ref ref="stdout"/>
-		<appender-ref ref="infoLog"/>
-		<appender-ref ref="warnLog"/>
-		<appender-ref ref="errorLog"/>
-	</logger>
-	
-	<logger name="org.apache.catalina">
-		<level value="${logback.log.level}"/>
-		<appender-ref ref="stdout"/>
-		<appender-ref ref="infoLog"/>
-		<appender-ref ref="warnLog"/> 
-		<appender-ref ref="errorLog"/>
-	</logger>
-	
-	<!-- 下面是打印mybatis语句的配置-->
-	 <logger name="org.apache.ibatis" additivity="true">
-	  <level value="${logback.log.level}" />
-	 </logger>
-	 <logger name="java.sql.Connection" additivity="true">
-	  <level value="${logback.log.level}" />
-	 </logger>
-	 <logger name="java.sql.Statement" additivity="true">
-	  <level value="${logback.log.level}" />
-	 </logger>
-	 <logger name="java.sql.PreparedStatement" additivity="true">
-	  <level value="${logback.log.level}" />
-	 </logger>
-	 <logger name="java.sql.ResultSet" additivity="true">
-	  <level value="${logback.log.level}" />
-	 </logger>
-	  <!-- 根logger的设置-->       
     <root>       
         <priority value ="INFO"/>
-        <appender-ref ref="stdout"/>
+        ${log4j.log.console}
     </root>    
 </log4j:configuration>

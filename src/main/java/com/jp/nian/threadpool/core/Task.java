@@ -5,6 +5,15 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @ClassName: Task  
+ * @Description: 模拟的任务 
+ * @date: 2017年1月11日 上午11:43:37 
+ * 
+ * @author tanfan 
+ * @version  
+ * @since JDK 1.7
+ */
 public class Task {
 	private static final Logger logger = LoggerFactory.getLogger(Task.class);
 	private String name;
@@ -19,14 +28,14 @@ public class Task {
 	}
 
 	public void doSomething() {
-		long sleepSecond = new Double(Math.random()*10).longValue();
+		long sleepTime = new Double(Math.random()*10).longValue();
 		try {
-			logger.info("I am doing my task|{}, I need sleep {} s", this, sleepSecond);
 			//模拟任务的执行时间
-			TimeUnit.SECONDS.sleep(sleepSecond);
-		} catch (Exception e) {
-			logger.error("I am sleep and happend error ", e);
+			logger.info("{} doing my task|{}, I need execute {} s", new Object[]{Thread.currentThread().getName(),  this, sleepTime});
+			TimeUnit.SECONDS.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			logger.error("{} execute task|{} error",new Object[]{Thread.currentThread().getName(), this, e});
 		}
-		logger.info("I am done my task|{}", this);
+		logger.info("{} done my task|{}", Thread.currentThread().getName(), this);
 	}
 }
