@@ -4,7 +4,7 @@
 
   <groupId>com.jp.nian.threadpool</groupId>
   <artifactId>threadpool-core</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0-${dev.version.type}</version>
   <packaging>jar</packaging>
 
   <name>threadpool-core</name>
@@ -63,6 +63,15 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  
+  <build>
+  	<resources>
+		<resource>
+			<directory>src/main/resources</directory>
+			<filtering>true</filtering>
+		</resource>
+	</resources>
+  </build>
   
   <profiles>
   		<!-- 本地，默认激活 ，实现本地测试资源自动替换 -->

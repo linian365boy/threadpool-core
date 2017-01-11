@@ -46,10 +46,10 @@ public class PoolThread extends Thread {
 			logger.debug("{} my task is |{}", this.getName(), task);
 			if(task!=null){
 				try{
+					idleLocal.set(false);
+					logger.debug("{} will be execute task", this.getName());
+					task.doSomething();
 					synchronized (this) {
-						logger.debug("{} will be execute task", this.getName());
-						idleLocal.set(false);
-						task.doSomething();
 						//归还这个Thread
 						pool.returnToPool(this);
 						if(pool.isShutdown()){
@@ -59,12 +59,12 @@ public class PoolThread extends Thread {
 						logger.debug("{} do the work and will be wait", this.getName());
 						this.wait();
 						logger.debug("{} is notifyed by other ", this.getName());
-						if(idleLocal!=null){
-							idleLocal.set(true);
-						}
+					}
+					if(idleLocal!=null){
+						idleLocal.set(true);
 					}
 				}catch(Exception e){
-					logger.error("thread task after error",e);
+					logger.error("thread|{} execute task error",this.getName(), e);
 				}
 			}
 		}
@@ -78,7 +78,7 @@ public class PoolThread extends Thread {
 		logger.debug("{} set the task|{} now ...",this.getName(), task);
 		this.task = task;
 		synchronized (this) {
-			logger.debug("I enter set the task synchronized ...");
+			logger.debug("{} set the task synchronized ...", this.getName());
 			this.notifyAll();
 		}
 	}

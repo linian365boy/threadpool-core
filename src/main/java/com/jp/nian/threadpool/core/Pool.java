@@ -1,17 +1,18 @@
 package com.jp.nian.threadpool.core;
 /**
  * @ClassName: Pool  
- * @Description: 池接口 
- * @date: 2016年10月8日 下午2:08:02 
+ * @Description: 线程池接口 
+ * @date: 2017年1月11日 上午11:43:06 
  * 
  * @author tanfan 
- * @version  
- * @param <T>
+ * @version @param <T> 
  * @since JDK 1.7
  */
 public interface Pool<T> {
 	//关闭线程池，会等待未完成任务的线程
 	void shutdown();
+	//立即关闭线程池，不会等待线程完成
+	void shutdownnow();
 	//执行任务
 	void execute(Task task);
 	//借

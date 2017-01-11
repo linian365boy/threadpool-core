@@ -1,5 +1,7 @@
 package com.jp.nian.threadpool.core;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -18,11 +20,13 @@ import org.slf4j.LoggerFactory;
  */
 public class ThreadPool implements Pool<PoolThread> {
 	//默认线程池的线程数
-	private static final int DEFAULT_SIZE = 6;
+	private static final int DEFAULT_SIZE = 5;
 	//线程池中的空闲线程，用队列表示
 	private BlockingQueue<PoolThread> idleThreads;
 	//设置线程池是否关闭的标志
 	private volatile boolean isShutdown = false;
+	//存放所有线程池的所有线程，不管是否在执行任务
+	private static Set<Thread> threadSet = new HashSet<>();
 	//日志组件
 	private static final Logger logger = LoggerFactory.getLogger(ThreadPool.class);
 	
@@ -37,6 +41,7 @@ public class ThreadPool implements Pool<PoolThread> {
 			thread.setName("ThreadPool-"+i);
 			thread.start();
 			idleThreads.add(thread);
+			threadSet.add(thread);
 		}
 	}
 	
@@ -54,11 +59,11 @@ public class ThreadPool implements Pool<PoolThread> {
 			thread.close();
 		}
 		idleThreads.clear();
+		threadSet.clear();
 	}
 	
 	@Override
 	public void execute(Task task) {
-		//线程空闲队列取出一个线程去执行任务
 		PoolThread thread = borrowFromPool();
 		logger.debug("I will set the task|{} soon...", task);
 		thread.setTask(task);
@@ -84,14 +89,28 @@ public class ThreadPool implements Pool<PoolThread> {
 			idleThreads.offer(t, 1L, TimeUnit.SECONDS);
 			logger.debug("thread {} return to pool, pool all has {} threads", t.getName(), idleThreads.size());
 		} catch (InterruptedException e) {
-			logger.error("return to pool error ",e);
+			logger.error("thread {} return to pool error ", t.getName(), e);
 		}
 	}
 	
+	@Override
+	public void shutdownnow() {
+		logger.info("pool is shutdown now!!!");
+		setShutdown(true);
+		for(Thread thread : threadSet){
+			if(!thread.isInterrupted()){
+				logger.info("{} will be interrupt.", thread.getName());
+				thread.interrupt();
+			}
+		}
+	}
+	
+	@Override
 	public boolean isShutdown() {
 		return isShutdown;
 	}
 
+	@Override
 	public void setShutdown(boolean isShutdown) {
 		this.isShutdown = isShutdown;
 	}
